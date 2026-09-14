@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>BiblioTech</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 720px; margin: 40px auto; color: #1f2933; }
+    h1 { color: #1e3a8a; }
+    input, button { padding: 8px; margin-right: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e5e7eb; }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; }
+    .ok { background: #dcfce7; color: #166534; }
+    .out { background: #fee2e2; color: #991b1b; }
+    footer { margin-top: 24px; font-size: 0.85rem; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>BiblioTech API — Catalogo de libros</h1>
+  <p>Esta pagina consume la API publica <code>GET /api/books</code> como demo. El resto de operaciones
+     (crear libro, prestamos) requieren autenticacion JWT via <code>/api/auth/register</code> y
+     <code>/api/auth/login</code>. Documentacion completa en <a href="/swagger-ui.html">/swagger-ui.html</a>.</p>
+
+  <input id="search" placeholder="Buscar por titulo o autor" />
+  <button onclick="loadBooks()">Buscar</button>
+
+  <table>
+    <thead>
+      <tr><th>Titulo</th><th>Autor</th><th>Genero</th><th>Disponibilidad</th></tr>
+    </thead>
+    <tbody id="results"></tbody>
+  </table>
+
+  <footer>BiblioTech API &mdash; proyecto de portafolio (Spring Boot + H2/PostgreSQL + JWT)</footer>
+
+  <script>
+    async function loadBooks() {
+      const q = document.getElementById('search').value;
+      const res = await fetch('/api/books' + (q ? ('?search=' + encodeURIComponent(q)) : ''));
+      const books = await res.json();
+      const tbody = document.getElementById('results');
+      tbody.innerHTML = '';
+      books.forEach((b) => {
+        const tr = document.createElement('tr');
+        const available = b.availableCopies > 0;
+        tr.innerHTML = `<td>${b.title}</td><td>${b.author}</td><td>${b.genre ?? ''}</td>
+          <td><span class="badge ${available ? 'ok' : 'out'}">${b.availableCopies}/${b.totalCopies} disponibles</span></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    loadBooks();
+  </script>
+</body>
+</html>
